@@ -1,0 +1,40 @@
+###Replace all {subject} lwith subject ID no brackets - H10, H11 etc. 
+
+#Go into FMRI folder with subjects 
+cd /raid5/rcho/fMRI/ 
+
+#go into subject's folder and create folderl fs_test
+cd /raid5/rcho/fMRI/{subject}/RAW/ 
+mkdir fs_test
+
+#Go into subject's folder
+cd {subject}/RAW/3D_SAG_T1/DICOM/
+
+#convert dicom to nifti
+dcm2nii -d N -e N -i N -o ./ IM_* 
+
+#move the output to a folder above (3D_SAG_T1) and rename it. 
+mv 3D* ../{subject}_T1.nii.gz
+
+#create freesurfer environment 
+export FREESURFER_HOME=/usr/local/bin/freesurfer
+export SUBJECTS_DIR=/raid5/rcho/PSYCH_CFC/fMRI/{subject}/RAW/fs_test/
+export SUBJECTS_DIR=/raid5/rcho/PSYCH_CFC/fMRI/H18/RAW/fs_test/
+source $FREESURFER_HOME/FreeSurferEnv.sh
+
+#move back to RAW drive 
+cd ../
+
+#run the freesurfer script
+recon-all -i ./3D_SAG_T1/{subject}_T1.nii.gz -s {subject} -sd fs_test/ -all 
+recon-all -i ./3D_SAG_T1/H12_T1.nii.gz -s H12 -sd fs_test/ -all 
+
+
+#once recon-all is complete, in the same terminal, run this script for BEM and other related functions to use MNE. 
+/raid5/rcho/MEG_NM_NR_testing/FINALMNE/SCRIPTS/meg_process_struct_ut.sh -s {subject}
+
+#once the BEM method above is done, create labels
+cd /raid5/rcho/PSYCH_CFC/MEG_raw_data/
+mkdir labels
+cd labels
+mne_annot2labels --subject <Freefurfer id> --parc aparc.a2009s   
