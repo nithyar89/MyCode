@@ -1,1 +1,1 @@
-# MyCode
+# MEG source localization
